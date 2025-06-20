@@ -14,7 +14,7 @@ This project solves the common developer pain point of writing changelogs by:
 
 ### CLI Tool (`changelog-ai`)
 - 🚀 **One-command generation**: `changelog-ai generate --commits 10`
-- 🤖 **AI-powered summarization** using Anthropic Claude
+- 🤖 **Stripe-style AI format** - professional, user-friendly changelogs
 - 📊 **Smart version detection** with confidence scoring
 - 🔄 **Duplicate prevention** - tracks processed commits
 - 📈 **History tracking** - view all generated changelogs
@@ -124,24 +124,43 @@ npm run start:web        Start production server
 
 ## 🤖 AI Integration
 
-The tool uses **Anthropic's Claude** with carefully crafted prompts to:
+The tool uses **Anthropic's Claude** with carefully crafted prompts to generate **Stripe-style changelog entries**:
 
-1. **Filter commits**: Ignore merge commits, WIP, and non-user-facing changes
-2. **Categorize changes**: Group into Features, Bug Fixes, Improvements, Breaking Changes
-3. **Write user-friendly descriptions**: Convert technical commits to readable summaries
-4. **Detect version impact**: Analyze semantic versioning implications with confidence scoring
+### New Stripe-Style Format
+1. **Descriptive Titles**: "Adds balance types to the Balance Transactions API" 
+2. **What's New Summary**: Clear, non-technical overview of changes
+3. **Impact Explanation**: How changes affect users and why they matter
+4. **Categorized Changes**: Technical details organized by type
+5. **Upgrade Instructions**: Step-by-step guidance when needed
+6. **Related Changes**: Cross-references to connected updates
 
-### Example AI Output
+### AI Processing Pipeline
+1. **Commit Analysis**: Examines messages, diffs, and patterns
+2. **Impact Assessment**: Determines user-facing effects
+3. **Narrative Construction**: Builds coherent story around changes
+4. **Professional Writing**: Creates publication-ready content
+5. **Version Detection**: Analyzes semantic versioning implications with confidence scoring
+
+### Example Stripe-Style Output
 ```markdown
-## ✨ Features
-- Added user dashboard with analytics providing insights into user activity
+# Introduces real-time notifications
 
-## 🐛 Bug Fixes  
-- Corrected a typo in the dashboard component
+## What's new
+This release adds real-time notifications that keep users informed about important events as they happen.
 
-## 🚨 Breaking Changes
-- Removed deprecated API endpoints for user authentication
+## Impact  
+Users can now receive instant alerts about critical system events, reducing response times and improving workflow efficiency. The notifications are customizable, allowing users to filter and prioritize information.
+
+## Changes
+### ✨ Features
+- Added real-time notification system with WebSocket support
+- Implemented customizable notification preferences
+
+### 🚀 Improvements  
+- Enhanced dashboard performance for faster loading
 ```
+
+**📖 See [STRIPE_CHANGELOG_FORMAT.md](STRIPE_CHANGELOG_FORMAT.md) for complete documentation**
 
 ## 📊 Version Analysis
 

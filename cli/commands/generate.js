@@ -161,8 +161,90 @@ async function createChangelogFile(sections, commits, repositoryInfo, outputDir,
   const filename = `${date}-${timestamp}.md`;
   const filepath = path.join(outputDir, filename);
   
-  // Create frontmatter
-  const frontmatter = `---
+  // Handle both new Stripe-style format and legacy format
+  const isStripeStyle = sections.title && sections.whatsNew !== undefined;
+  
+  if (isStripeStyle) {
+    // New Stripe-style format
+    const frontmatter = `---
+date: ${date}
+commits: ${commits.length}
+repository: ${repositoryInfo.name}
+versionType: ${versionAnalysis.versionType}
+versionConfidence: ${Math.round(versionAnalysis.confidence * 100)}
+generated: ${new Date().toISOString()}
+title: "${sections.title}"
+whatsNew: "${sections.whatsNew}"
+impact: "${sections.impact}"
+upgrade: "${sections.upgrade || ''}"
+related: "${sections.related || ''}"
+---
+
+# ${sections.title || `Changelog - ${date}`}
+
+## What's new
+
+${sections.whatsNew || 'Multiple improvements and updates have been made.'}
+
+## Impact
+
+${sections.impact || 'These changes improve the overall functionality and user experience.'}
+
+## Changes
+`;
+
+    let content = frontmatter;
+    
+    // Add changes sections
+    if (sections.changes.features && sections.changes.features.length > 0) {
+      content += `\n### ✨ Features\n\n`;
+      sections.changes.features.forEach(feature => {
+        content += `- ${feature}\n`;
+      });
+    }
+    
+    if (sections.changes.bugFixes && sections.changes.bugFixes.length > 0) {
+      content += `\n### 🐛 Bug Fixes\n\n`;
+      sections.changes.bugFixes.forEach(fix => {
+        content += `- ${fix}\n`;
+      });
+    }
+    
+    if (sections.changes.improvements && sections.changes.improvements.length > 0) {
+      content += `\n### 🚀 Improvements\n\n`;
+      sections.changes.improvements.forEach(improvement => {
+        content += `- ${improvement}\n`;
+      });
+    }
+    
+    if (sections.changes.breakingChanges && sections.changes.breakingChanges.length > 0) {
+      content += `\n### ⚠️ Breaking Changes\n\n`;
+      sections.changes.breakingChanges.forEach(change => {
+        content += `- ${change}\n`;
+      });
+    }
+    
+    // Add upgrade section if present
+    if (sections.upgrade && sections.upgrade.trim()) {
+      content += `\n## Upgrade\n\n${sections.upgrade}\n`;
+    }
+    
+    // Add related section if present
+    if (sections.related && sections.related.trim()) {
+      content += `\n## Related changes\n\n${sections.related}\n`;
+    }
+    
+    // Add commit details as appendix
+    content += `\n---\n\n## Commit Details\n\n`;
+    commits.forEach(commit => {
+      content += `- **${commit.shortHash}**: ${commit.message} _(${commit.author_name})_\n`;
+    });
+    
+    await fs.writeFile(filepath, content);
+    return filename;
+  } else {
+    // Legacy format for backward compatibility
+    const frontmatter = `---
 date: ${date}
 commits: ${commits.length}
 repository: ${repositoryInfo.name}
@@ -177,49 +259,49 @@ Generated from ${commits.length} commits in ${repositoryInfo.name}
 
 `;
 
-  // Build content
-  let content = frontmatter;
-  
-  if (sections.features && sections.features.length > 0) {
-    content += `## ✨ Features\n\n`;
-    sections.features.forEach(feature => {
-      content += `- ${feature}\n`;
+    let content = frontmatter;
+    
+    if (sections.features && sections.features.length > 0) {
+      content += `## ✨ Features\n\n`;
+      sections.features.forEach(feature => {
+        content += `- ${feature}\n`;
+      });
+      content += '\n';
+    }
+    
+    if (sections.bugFixes && sections.bugFixes.length > 0) {
+      content += `## 🐛 Bug Fixes\n\n`;
+      sections.bugFixes.forEach(fix => {
+        content += `- ${fix}\n`;
+      });
+      content += '\n';
+    }
+    
+    if (sections.improvements && sections.improvements.length > 0) {
+      content += `## 🚀 Improvements\n\n`;
+      sections.improvements.forEach(improvement => {
+        content += `- ${improvement}\n`;
+      });
+      content += '\n';
+    }
+    
+    if (sections.breakingChanges && sections.breakingChanges.length > 0) {
+      content += `## ⚠️ Breaking Changes\n\n`;
+      sections.breakingChanges.forEach(change => {
+        content += `- ${change}\n`;
+      });
+      content += '\n';
+    }
+    
+    // Add commit details as appendix
+    content += `---\n\n## Commit Details\n\n`;
+    commits.forEach(commit => {
+      content += `- **${commit.shortHash}**: ${commit.message} _(${commit.author_name})_\n`;
     });
-    content += '\n';
+    
+    await fs.writeFile(filepath, content);
+    return filename;
   }
-  
-  if (sections.bugFixes && sections.bugFixes.length > 0) {
-    content += `## 🐛 Bug Fixes\n\n`;
-    sections.bugFixes.forEach(fix => {
-      content += `- ${fix}\n`;
-    });
-    content += '\n';
-  }
-  
-  if (sections.improvements && sections.improvements.length > 0) {
-    content += `## 🚀 Improvements\n\n`;
-    sections.improvements.forEach(improvement => {
-      content += `- ${improvement}\n`;
-    });
-    content += '\n';
-  }
-  
-  if (sections.breakingChanges && sections.breakingChanges.length > 0) {
-    content += `## ⚠️ Breaking Changes\n\n`;
-    sections.breakingChanges.forEach(change => {
-      content += `- ${change}\n`;
-    });
-    content += '\n';
-  }
-  
-  // Add commit details as appendix
-  content += `---\n\n## Commit Details\n\n`;
-  commits.forEach(commit => {
-    content += `- **${commit.shortHash}**: ${commit.message} _(${commit.author_name})_\n`;
-  });
-  
-  await fs.writeFile(filepath, content);
-  return filename;
 }
 
 async function filterDuplicateCommits(commits) {
@@ -286,41 +368,112 @@ async function updateMetadata(filename, commitCount, options, commits, versionAn
 }
 
 async function displayChangelog(sections) {
-  const hasContent = Object.values(sections).some(section => 
-    Array.isArray(section) && section.length > 0
-  );
+  // Handle both new Stripe-style format and legacy format
+  const isStripeStyle = sections.title && sections.whatsNew !== undefined;
   
-  if (!hasContent) {
-    console.log(chalk.gray('No significant changes detected.'));
-    return;
-  }
-  
-  if (sections.features && sections.features.length > 0) {
-    console.log(chalk.green('\n✨ Features:'));
-    sections.features.forEach(feature => {
-      console.log(`  • ${feature}`);
-    });
-  }
-  
-  if (sections.bugFixes && sections.bugFixes.length > 0) {
-    console.log(chalk.red('\n🐛 Bug Fixes:'));
-    sections.bugFixes.forEach(fix => {
-      console.log(`  • ${fix}`);
-    });
-  }
-  
-  if (sections.improvements && sections.improvements.length > 0) {
-    console.log(chalk.blue('\n🚀 Improvements:'));
-    sections.improvements.forEach(improvement => {
-      console.log(`  • ${improvement}`);
-    });
-  }
-  
-  if (sections.breakingChanges && sections.breakingChanges.length > 0) {
-    console.log(chalk.magenta('\n⚠️ Breaking Changes:'));
-    sections.breakingChanges.forEach(change => {
-      console.log(`  • ${change}`);
-    });
+  if (isStripeStyle) {
+    // Display Stripe-style format
+    console.log(chalk.bold.white(`\n📋 ${sections.title}`));
+    
+    if (sections.whatsNew) {
+      console.log(chalk.cyan(`\n🆕 What's new:`));
+      console.log(`   ${sections.whatsNew}`);
+    }
+    
+    if (sections.impact) {
+      console.log(chalk.yellow(`\n💥 Impact:`));
+      console.log(`   ${sections.impact}`);
+    }
+    
+    // Display changes
+    const changes = sections.changes || {};
+    const hasChanges = Object.values(changes).some(section => 
+      Array.isArray(section) && section.length > 0
+    );
+    
+    if (hasChanges) {
+      console.log(chalk.bold('\n📝 Changes:'));
+      
+      if (changes.features && changes.features.length > 0) {
+        console.log(chalk.green('\n  ✨ Features:'));
+        changes.features.forEach(feature => {
+          console.log(`    • ${feature}`);
+        });
+      }
+      
+      if (changes.bugFixes && changes.bugFixes.length > 0) {
+        console.log(chalk.red('\n  🐛 Bug Fixes:'));
+        changes.bugFixes.forEach(fix => {
+          console.log(`    • ${fix}`);
+        });
+      }
+      
+      if (changes.improvements && changes.improvements.length > 0) {
+        console.log(chalk.blue('\n  🚀 Improvements:'));
+        changes.improvements.forEach(improvement => {
+          console.log(`    • ${improvement}`);
+        });
+      }
+      
+      if (changes.breakingChanges && changes.breakingChanges.length > 0) {
+        console.log(chalk.magenta('\n  ⚠️ Breaking Changes:'));
+        changes.breakingChanges.forEach(change => {
+          console.log(`    • ${change}`);
+        });
+      }
+    }
+    
+         if (sections.upgrade && sections.upgrade.trim()) {
+       console.log(chalk.yellow(`\n🔧 Upgrade Instructions:`));
+       console.log(`   ${sections.upgrade}`);
+     }
+    
+    if (sections.related && sections.related.trim()) {
+      console.log(chalk.blue(`\n🔗 Related Changes:`));
+      console.log(`   ${sections.related}`);
+    }
+    
+    if (!hasChanges && !sections.whatsNew && !sections.impact) {
+      console.log(chalk.gray('No significant changes detected.'));
+    }
+  } else {
+    // Legacy display format
+    const hasContent = Object.values(sections).some(section => 
+      Array.isArray(section) && section.length > 0
+    );
+    
+    if (!hasContent) {
+      console.log(chalk.gray('No significant changes detected.'));
+      return;
+    }
+    
+    if (sections.features && sections.features.length > 0) {
+      console.log(chalk.green('\n✨ Features:'));
+      sections.features.forEach(feature => {
+        console.log(`  • ${feature}`);
+      });
+    }
+    
+    if (sections.bugFixes && sections.bugFixes.length > 0) {
+      console.log(chalk.red('\n🐛 Bug Fixes:'));
+      sections.bugFixes.forEach(fix => {
+        console.log(`  • ${fix}`);
+      });
+    }
+    
+    if (sections.improvements && sections.improvements.length > 0) {
+      console.log(chalk.blue('\n🚀 Improvements:'));
+      sections.improvements.forEach(improvement => {
+        console.log(`  • ${improvement}`);
+      });
+    }
+    
+    if (sections.breakingChanges && sections.breakingChanges.length > 0) {
+      console.log(chalk.magenta('\n⚠️ Breaking Changes:'));
+      sections.breakingChanges.forEach(change => {
+        console.log(`  • ${change}`);
+      });
+    }
   }
 }
 

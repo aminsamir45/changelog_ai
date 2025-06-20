@@ -1,105 +1,28 @@
 {
   "changelogs": [
     {
-      "filename": "2025-06-20-2025-06-20T01-34-07.md",
+      "filename": "2025-06-20-2025-06-20T22-01-16.md",
       "date": "2025-06-20",
-      "commitCount": 1,
+      "commitCount": 10,
       "commitHashes": [
-        "4116824c501161a4a498ba116c2a79c9d9cbd4dc"
-      ],
-      "versionType": "patch",
-      "versionConfidence": 60,
-      "options": {
-        "commits": "1"
-      },
-      "generated": "2025-06-20T01:34:07.030Z"
-    },
-    {
-      "filename": "2025-06-20-2025-06-20T01-33-48.md",
-      "date": "2025-06-20",
-      "commitCount": 1,
-      "commitHashes": [
-        "b4c71bdb08d5e75751e3bf02dd9d9362e5e11a52"
-      ],
-      "versionType": "minor",
-      "versionConfidence": 80,
-      "options": {
-        "commits": "1"
-      },
-      "generated": "2025-06-20T01:33:48.464Z"
-    },
-    {
-      "filename": "2025-06-20-2025-06-20T01-33-36.md",
-      "date": "2025-06-20",
-      "commitCount": 1,
-      "commitHashes": [
-        "698f20b89475d52ce5c77db7e68332112805094c"
+        "fde213cc12d4b9f43f0ddfea2f521d4e733dc2b3",
+        "4fb37a36d34c72fc69fbf22496bc76f077e5de6b",
+        "d04389e72e6785ffdc744839234860cd77632ff8",
+        "97c9bc213f9d431dd1e0b15b32260d04e03a70bc",
+        "4116824c501161a4a498ba116c2a79c9d9cbd4dc",
+        "b4c71bdb08d5e75751e3bf02dd9d9362e5e11a52",
+        "698f20b89475d52ce5c77db7e68332112805094c",
+        "b9cdf03fd7e46fe8341e9b99d8ad04bae37a05f0",
+        "63613f3d0fcbc141e9c3fc2fddee95e21a46501d",
+        "264fbe7d352c496f606005f8e47d1f1675fd6c43"
       ],
       "versionType": "major",
-      "versionConfidence": 95,
+      "versionConfidence": 70,
       "options": {
-        "commits": "1"
+        "commits": "10"
       },
-      "generated": "2025-06-20T01:33:36.612Z"
-    },
-    {
-      "filename": "2025-06-20-2025-06-20T01-22-21.md",
-      "date": "2025-06-20",
-      "commitCount": 1,
-      "commitHashes": [
-        "b9cdf03fd7e46fe8341e9b99d8ad04bae37a05f0"
-      ],
-      "options": {
-        "commits": "1"
-      },
-      "generated": "2025-06-20T01:22:21.398Z"
-    },
-    {
-      "filename": "2025-06-20.md",
-      "date": "2025-06-20",
-      "commitCount": 1,
-      "commitHashes": [
-        "63613f3d0fcbc141e9c3fc2fddee95e21a46501d"
-      ],
-      "options": {
-        "commits": "1"
-      },
-      "generated": "2025-06-20T01:20:41.590Z"
-    },
-    {
-      "filename": "2025-06-20.md",
-      "date": "2025-06-20",
-      "commitCount": 2,
-      "commitHashes": [
-        "3d54bbb4ec76f3cf55dd8432cb7c06add8a4a769",
-        "313815486ff0da159147136023754545fce7c796"
-      ],
-      "options": {
-        "commits": "3"
-      },
-      "generated": "2025-06-20T01:13:20.745Z"
-    },
-    {
-      "filename": "2025-06-20.md",
-      "date": "2025-06-20",
-      "commitCount": 1,
-      "commitHashes": [
-        "3bd937fed3723ef54d59ccabcf673a257395321e"
-      ],
-      "options": {
-        "commits": "1"
-      },
-      "generated": "2025-06-20T01:12:52.072Z"
-    },
-    {
-      "filename": "2025-06-20.md",
-      "date": "2025-06-20",
-      "commitCount": 1,
-      "options": {
-        "commits": "5"
-      },
-      "generated": "2025-06-20T01:09:35.814Z"
+      "generated": "2025-06-20T22:01:16.869Z"
     }
   ],
-  "lastGenerated": "2025-06-20T01:34:07.030Z"
+  "lastGenerated": "2025-06-20T22:01:16.869Z"
 }

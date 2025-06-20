@@ -71,7 +71,7 @@ export async function getAllChangelogs(): Promise<ChangelogEntry[]> {
       return {
         filename,
         slug,
-        date: data.date || '',
+        date: data.date instanceof Date ? data.date.toISOString().split('T')[0] : data.date || '',
         commits: data.commits || 0,
         repository: data.repository || '',
         versionType: (data.versionType as ChangelogEntry['versionType']) || 'unknown',
@@ -114,7 +114,7 @@ export async function getChangelogBySlug(slug: string): Promise<ChangelogEntry |
     return {
       filename,
       slug,
-      date: data.date || '',
+      date: data.date instanceof Date ? data.date.toISOString().split('T')[0] : data.date || '',
       commits: data.commits || 0,
       repository: data.repository || '',
       versionType: (data.versionType as ChangelogEntry['versionType']) || 'unknown',
@@ -235,12 +235,22 @@ export function getVersionBadgeClass(versionType: string): string {
 
 export function formatDate(dateString: string): string {
   try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    // Handle YYYY-MM-DD format by parsing directly to avoid timezone issues
+    if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      const [year, month, day] = dateString.split('-').map(Number);
+      const shortYear = year.toString().slice(-2);
+      return `${month}-${day}-${shortYear}`;
+    } else {
+      // For other formats, use Date parsing
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return dateString;
+      }
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      const year = date.getFullYear().toString().slice(-2);
+      return `${month}-${day}-${year}`;
+    }
   } catch {
     return dateString;
   }

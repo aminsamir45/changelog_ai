@@ -31,6 +31,22 @@ export default function Home() {
     loadChangelogs();
   }, []);
 
+  // Group changelogs by commit date (when changes were actually made)
+  const groupedChangelogs = filteredChangelogs.reduce((groups, changelog) => {
+    // Use the date field which represents when the commits were actually made
+    const dateKey = changelog.date;
+    if (!groups[dateKey]) {
+      groups[dateKey] = [];
+    }
+    groups[dateKey].push(changelog);
+    return groups;
+  }, {} as Record<string, ChangelogEntry[]>);
+
+  // Sort dates in descending order (newest first)
+  const sortedDates = Object.keys(groupedChangelogs).sort((a, b) => 
+    new Date(b).getTime() - new Date(a).getTime()
+  );
+
   useEffect(() => {
     let filtered = changelogs;
 
@@ -295,88 +311,105 @@ export default function Home() {
           </div>
         )}
         
-        <div className="space-y-8">
-          {filteredChangelogs.map((changelog) => (
-            <Link
-              key={changelog.filename}
-              href={`/changelog/${changelog.slug}`}
-              className="block group"
-            >
-              <article className="changelog-card">
-                {/* Header */}
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center flex-wrap gap-3">
-                    <h2 className="text-xl font-semibold text-white group-hover:text-blue-300 transition-colors">
-                      {changelog.title || `Update ${formatDate(changelog.date)}`}
-                    </h2>
-                    {changelog.versionType && changelog.versionType !== 'unknown' && (
-                      <span className={`version-badge ${getVersionBadgeClass(changelog.versionType)}`}>
-                        {getVersionEmoji(changelog.versionType)} {changelog.versionType.toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {getRelativeTime(changelog.generated)}
-                  </div>
-                </div>
+                 <div className="space-y-12">
+           {sortedDates.map((date) => (
+             <div key={date} className="space-y-6">
+               {/* Date Header */}
+                               <div className="border-b border-gray-800 pb-4">
+                  <h2 className="text-2xl font-semibold text-white">
+                    {formatDate(date)}
+                  </h2>
+                 <p className="text-gray-400 text-sm mt-1">
+                   {groupedChangelogs[date].length} update{groupedChangelogs[date].length !== 1 ? 's' : ''}
+                 </p>
+               </div>
 
-                                {/* High-level summary */}
-                <div className="space-y-2">
-                  {/* Show "What's new" summary for Stripe-style changelogs */}
-                  {changelog.whatsNew && (
-                    <div className="text-gray-300 line-clamp-2">
-                      {changelog.whatsNew}
-                    </div>
-                  )}
-                  
-                  {/* For legacy format, show change counts */}
-                  {!changelog.whatsNew && (
-                    <div className="flex flex-wrap gap-3 text-sm">
-                      {changelog.sections.features && changelog.sections.features.length > 0 && (
-                        <span className="text-blue-300">
-                          ✨ {changelog.sections.features.length} feature{changelog.sections.features.length !== 1 ? 's' : ''}
-                        </span>
-                      )}
-                      {changelog.sections.bugFixes && changelog.sections.bugFixes.length > 0 && (
-                        <span className="text-green-300">
-                          🐛 {changelog.sections.bugFixes.length} fix{changelog.sections.bugFixes.length !== 1 ? 'es' : ''}
-                        </span>
-                      )}
-                      {changelog.sections.improvements && changelog.sections.improvements.length > 0 && (
-                        <span className="text-orange-300">
-                          ⚡ {changelog.sections.improvements.length} improvement{changelog.sections.improvements.length !== 1 ? 's' : ''}
-                        </span>
-                      )}
-                      {changelog.sections.breakingChanges && changelog.sections.breakingChanges.length > 0 && (
-                        <span className="text-red-300">
-                          ⚠️ {changelog.sections.breakingChanges.length} breaking change{changelog.sections.breakingChanges.length !== 1 ? 's' : ''}
-                        </span>
-                      )}
-                      {!changelog.sections.features?.length && 
-                       !changelog.sections.bugFixes?.length && 
-                       !changelog.sections.improvements?.length && 
-                       !changelog.sections.breakingChanges?.length && (
-                        <span className="text-gray-500 italic">
-                          No significant changes detected
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
+               {/* Changelogs for this date */}
+               <div className="space-y-6">
+                 {groupedChangelogs[date].map((changelog) => (
+                   <Link
+                     key={changelog.filename}
+                     href={`/changelog/${changelog.slug}`}
+                     className="block group"
+                   >
+                     <article className="changelog-card">
+                       {/* Header */}
+                       <div className="flex items-start justify-between mb-3">
+                         <div className="flex items-center flex-wrap gap-3">
+                           <h3 className="text-xl font-semibold text-white group-hover:text-blue-300 transition-colors">
+                             {changelog.title || 'Update'}
+                           </h3>
+                           {changelog.versionType && changelog.versionType !== 'unknown' && (
+                             <span className={`version-badge ${getVersionBadgeClass(changelog.versionType)}`}>
+                               {getVersionEmoji(changelog.versionType)} {changelog.versionType.toUpperCase()}
+                             </span>
+                           )}
+                         </div>
+                         <div className="text-sm text-gray-500">
+                           {getRelativeTime(changelog.generated)}
+                         </div>
+                       </div>
 
-                {/* Footer */}
-                <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-800">
-                  <div className="text-sm text-gray-500">
-                    {changelog.commits} commit{changelog.commits !== 1 ? 's' : ''}
-                  </div>
-                  <div className="text-sm text-gray-500 group-hover:text-gray-400 transition-colors">
-                    View details →
-                  </div>
-                </div>
-              </article>
-            </Link>
-          ))}
-        </div>
+                       {/* High-level summary */}
+                       <div className="space-y-2">
+                         {/* Show "What's new" summary for Stripe-style changelogs */}
+                         {changelog.whatsNew && (
+                           <div className="text-gray-300 line-clamp-2">
+                             {changelog.whatsNew}
+                           </div>
+                         )}
+                         
+                         {/* For legacy format, show change counts */}
+                         {!changelog.whatsNew && (
+                           <div className="flex flex-wrap gap-3 text-sm">
+                             {changelog.sections.features && changelog.sections.features.length > 0 && (
+                               <span className="text-blue-300">
+                                 ✨ {changelog.sections.features.length} feature{changelog.sections.features.length !== 1 ? 's' : ''}
+                               </span>
+                             )}
+                             {changelog.sections.bugFixes && changelog.sections.bugFixes.length > 0 && (
+                               <span className="text-green-300">
+                                 🐛 {changelog.sections.bugFixes.length} fix{changelog.sections.bugFixes.length !== 1 ? 'es' : ''}
+                               </span>
+                             )}
+                             {changelog.sections.improvements && changelog.sections.improvements.length > 0 && (
+                               <span className="text-orange-300">
+                                 ⚡ {changelog.sections.improvements.length} improvement{changelog.sections.improvements.length !== 1 ? 's' : ''}
+                               </span>
+                             )}
+                             {changelog.sections.breakingChanges && changelog.sections.breakingChanges.length > 0 && (
+                               <span className="text-red-300">
+                                 ⚠️ {changelog.sections.breakingChanges.length} breaking change{changelog.sections.breakingChanges.length !== 1 ? 's' : ''}
+                               </span>
+                             )}
+                             {!changelog.sections.features?.length && 
+                              !changelog.sections.bugFixes?.length && 
+                              !changelog.sections.improvements?.length && 
+                              !changelog.sections.breakingChanges?.length && (
+                               <span className="text-gray-500 italic">
+                                 No significant changes detected
+                               </span>
+                             )}
+                           </div>
+                         )}
+                       </div>
+
+                       {/* Footer */}
+                       <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-800">
+                         <div className="text-sm text-gray-500">
+                           {changelog.commits} commit{changelog.commits !== 1 ? 's' : ''}
+                         </div>
+                         <div className="text-sm text-gray-500 group-hover:text-gray-400 transition-colors">
+                           View details →
+                         </div>
+                       </div>
+                     </article>
+                   </Link>
+                 ))}
+               </div>
+             </div>
+           ))}
+         </div>
 
         {/* Empty State */}
         {filteredChangelogs.length === 0 && (
