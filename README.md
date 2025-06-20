@@ -151,13 +151,6 @@ This release adds real-time notifications that keep users informed about importa
 ## Impact  
 Users can now receive instant alerts about critical system events, reducing response times and improving workflow efficiency. The notifications are customizable, allowing users to filter and prioritize information.
 
-## Changes
-### ✨ Features
-- Added real-time notification system with WebSocket support
-- Implemented customizable notification preferences
-
-### 🚀 Improvements  
-- Enhanced dashboard performance for faster loading
 ```
 
 **📖 See [STRIPE_CHANGELOG_FORMAT.md](STRIPE_CHANGELOG_FORMAT.md) for complete documentation**
@@ -178,23 +171,6 @@ The tool includes sophisticated version detection:
 - **Website**: Next.js 15, TypeScript, Tailwind CSS
 - **Storage**: Markdown files with frontmatter
 - **Parsing**: Gray-matter for frontmatter processing
-
-## 📈 Implementation Status
-
-### Phase 1: MVP ✅ 
-- [x] CLI tool with Git integration
-- [x] Anthropic API integration  
-- [x] Basic changelog generation
-- [x] Next.js website with dark theme
-- [x] End-to-end functionality
-
-### Phase 2: Enhanced Features ✅
-- [x] Version detection with confidence scoring
-- [x] Duplicate prevention
-- [x] History tracking and display
-- [x] Beautiful card-based UI
-- [x] Detailed changelog views
-- [x] Responsive design
 
 ## 🎯 Product Decisions
 
@@ -219,9 +195,5 @@ npm run build:web
 
 ## 📝 AI Tools Used
 
-- **Claude (Anthropic)** - For commit summarization and changelog generation
-- **Cursor/Claude** - For development assistance and code generation
+- **Cursor/Claude 4** - For development assistance and code generation
 
----
-
-**Built with ❤️ for developers who want beautiful changelogs without the manual work.**
