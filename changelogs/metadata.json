@@ -1,0 +1,39 @@
+{
+  "changelogs": [
+    {
+      "filename": "2025-06-20.md",
+      "date": "2025-06-20",
+      "commitCount": 2,
+      "commitHashes": [
+        "3d54bbb4ec76f3cf55dd8432cb7c06add8a4a769",
+        "313815486ff0da159147136023754545fce7c796"
+      ],
+      "options": {
+        "commits": "3"
+      },
+      "generated": "2025-06-20T01:13:20.745Z"
+    },
+    {
+      "filename": "2025-06-20.md",
+      "date": "2025-06-20",
+      "commitCount": 1,
+      "commitHashes": [
+        "3bd937fed3723ef54d59ccabcf673a257395321e"
+      ],
+      "options": {
+        "commits": "1"
+      },
+      "generated": "2025-06-20T01:12:52.072Z"
+    },
+    {
+      "filename": "2025-06-20.md",
+      "date": "2025-06-20",
+      "commitCount": 1,
+      "options": {
+        "commits": "5"
+      },
+      "generated": "2025-06-20T01:09:35.814Z"
+    }
+  ],
+  "lastGenerated": "2025-06-20T01:13:20.745Z"
+}

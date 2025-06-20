@@ -1,0 +1,32 @@
+{
+  "name": "changelog-ai",
+  "version": "1.0.0",
+  "description": "AI-powered changelog generator from Git commits",
+  "main": "cli/index.js",
+  "bin": {
+    "changelog-ai": "./cli/index.js"
+  },
+  "scripts": {
+    "cli": "node cli/index.js",
+    "dev:web": "cd web && npm run dev",
+    "build:web": "cd web && npm run build",
+    "install:all": "npm install && cd web && npm install"
+  },
+  "keywords": ["changelog", "git", "ai", "anthropic", "cli"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.3",
+    "commander": "^11.1.0",
+    "simple-git": "^3.20.0",
+    "chalk": "^4.1.2",
+    "ora": "^5.4.1",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+} 

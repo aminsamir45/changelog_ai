@@ -1,0 +1,20 @@
+{
+  "anthropic": {
+    "model": "claude-3-sonnet-20240229",
+    "maxTokens": 1000
+  },
+  "changelog": {
+    "categories": [
+      "Features",
+      "Bug Fixes",
+      "Improvements",
+      "Breaking Changes"
+    ],
+    "excludePatterns": [
+      "merge",
+      "wip",
+      "fixup",
+      "squash"
+    ]
+  }
+}
