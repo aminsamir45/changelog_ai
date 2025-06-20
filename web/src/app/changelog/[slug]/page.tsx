@@ -1,26 +1,67 @@
+'use client';
+
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { getChangelogBySlug, getAllChangelogs, getVersionEmoji, getVersionBadgeClass, formatDate, getRelativeTime } from '@/lib/changelog';
+import { useParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { getVersionEmoji, getVersionBadgeClass, formatDate, getRelativeTime, type ChangelogEntry } from '@/lib/changelog-client';
 
-interface PageProps {
-  params: Promise<{
-    slug: string;
-  }>;
-}
+export default function ChangelogPage() {
+  const params = useParams();
+  const slug = params.slug as string;
+  const [changelog, setChangelog] = useState<ChangelogEntry | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
-export async function generateStaticParams() {
-  const changelogs = await getAllChangelogs();
-  return changelogs.map((changelog) => ({
-    slug: changelog.slug,
-  }));
-}
+  useEffect(() => {
+    const loadChangelog = async () => {
+      try {
+        const response = await fetch(`/api/changelogs/${slug}`);
+        if (response.status === 404) {
+          setNotFound(true);
+          return;
+        }
+        if (!response.ok) {
+          throw new Error('Failed to fetch changelog');
+        }
+        const data = await response.json();
+        setChangelog(data);
+      } catch (error) {
+        console.error('Error loading changelog:', error);
+        setNotFound(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-export default async function ChangelogPage({ params }: PageProps) {
-  const { slug } = await params;
-  const changelog = await getChangelogBySlug(slug);
+    if (slug) {
+      loadChangelog();
+    }
+  }, [slug]);
 
-  if (!changelog) {
-    notFound();
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="text-gray-400">Loading changelog...</div>
+      </div>
+    );
+  }
+
+  if (notFound || !changelog) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-semibold text-white mb-2">Changelog not found</h1>
+          <p className="text-gray-400 mb-4">The changelog you&apos;re looking for doesn&apos;t exist.</p>
+          <Link 
+            href="/"
+            className="inline-flex items-center space-x-2 text-blue-400 hover:text-white transition-colors"
+          >
+            <span>←</span>
+            <span>Back to Changelog</span>
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -38,20 +79,13 @@ export default async function ChangelogPage({ params }: PageProps) {
                 <span>Back to Changelog</span>
               </Link>
               <h1 className="text-3xl font-semibold text-white mb-2">
-                {formatDate(changelog.date)}
+                {changelog.title || formatDate(changelog.date)}
               </h1>
-              <div className="flex items-center space-x-4">
-                {changelog.versionType && changelog.versionType !== 'unknown' && (
-                  <span className={`version-badge ${getVersionBadgeClass(changelog.versionType)}`}>
-                    {getVersionEmoji(changelog.versionType)} {changelog.versionType.toUpperCase()}
-                  </span>
-                )}
-                {changelog.versionConfidence && (
-                  <span className="text-sm text-gray-500">
-                    {changelog.versionConfidence}% confidence
-                  </span>
-                )}
-              </div>
+              {changelog.versionType && changelog.versionType !== 'unknown' && (
+                <span className={`version-badge ${getVersionBadgeClass(changelog.versionType)}`}>
+                  {getVersionEmoji(changelog.versionType)} {changelog.versionType.toUpperCase()}
+                </span>
+              )}
             </div>
             <div className="text-sm text-gray-500">
               {getRelativeTime(changelog.generated)}
@@ -63,10 +97,40 @@ export default async function ChangelogPage({ params }: PageProps) {
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-6 py-12">
         <div className="space-y-12">
+          {/* What's new section (Stripe-style) */}
+          {changelog.whatsNew && (
+            <section>
+              <h2 className="text-2xl font-semibold text-white mb-6">What&apos;s new</h2>
+              <div className="text-gray-300 leading-relaxed text-lg">
+                {changelog.whatsNew}
+              </div>
+            </section>
+          )}
+
+          {/* Impact section (Stripe-style) */}
+          {changelog.impact && (
+            <section>
+              <h2 className="text-2xl font-semibold text-white mb-6">Impact</h2>
+              <div className="text-gray-300 leading-relaxed">
+                {changelog.impact}
+              </div>
+            </section>
+          )}
+          {/* Changes header for Stripe-style format */}
+          {(changelog.whatsNew || changelog.impact) && 
+           (changelog.sections.features?.length || changelog.sections.bugFixes?.length || 
+            changelog.sections.improvements?.length || changelog.sections.breakingChanges?.length) && (
+            <section>
+              <h2 className="text-2xl font-semibold text-white mb-8">Changes</h2>
+            </section>
+          )}
+
           {/* Features */}
           {changelog.sections.features && changelog.sections.features.length > 0 && (
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-6 flex items-center space-x-3">
+              <h2 className={`text-2xl font-semibold text-white mb-6 flex items-center space-x-3 ${
+                (changelog.whatsNew || changelog.impact) ? 'text-xl ml-4' : ''
+              }`}>
                 <span className="text-blue-400">✨</span>
                 <span>Features</span>
               </h2>
@@ -86,7 +150,9 @@ export default async function ChangelogPage({ params }: PageProps) {
           {/* Bug Fixes */}
           {changelog.sections.bugFixes && changelog.sections.bugFixes.length > 0 && (
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-6 flex items-center space-x-3">
+              <h2 className={`text-2xl font-semibold text-white mb-6 flex items-center space-x-3 ${
+                (changelog.whatsNew || changelog.impact) ? 'text-xl ml-4' : ''
+              }`}>
                 <span className="text-green-400">🐛</span>
                 <span>Bug Fixes</span>
               </h2>
@@ -106,7 +172,9 @@ export default async function ChangelogPage({ params }: PageProps) {
           {/* Improvements */}
           {changelog.sections.improvements && changelog.sections.improvements.length > 0 && (
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-6 flex items-center space-x-3">
+              <h2 className={`text-2xl font-semibold text-white mb-6 flex items-center space-x-3 ${
+                (changelog.whatsNew || changelog.impact) ? 'text-xl ml-4' : ''
+              }`}>
                 <span className="text-orange-400">⚡</span>
                 <span>Improvements</span>
               </h2>
@@ -126,7 +194,9 @@ export default async function ChangelogPage({ params }: PageProps) {
           {/* Breaking Changes */}
           {changelog.sections.breakingChanges && changelog.sections.breakingChanges.length > 0 && (
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-6 flex items-center space-x-3">
+              <h2 className={`text-2xl font-semibold text-white mb-6 flex items-center space-x-3 ${
+                (changelog.whatsNew || changelog.impact) ? 'text-xl ml-4' : ''
+              }`}>
                 <span className="text-red-400">⚠️</span>
                 <span>Breaking Changes</span>
               </h2>
@@ -144,6 +214,28 @@ export default async function ChangelogPage({ params }: PageProps) {
                     </div>
                   </div>
                 ))}
+              </div>
+            </section>
+          )}
+
+          {/* Upgrade section (Stripe-style) */}
+          {changelog.upgrade && changelog.upgrade.trim() && (
+            <section>
+              <h2 className="text-2xl font-semibold text-white mb-6">Upgrade</h2>
+              <div className="bg-blue-900 bg-opacity-20 border border-blue-800 border-opacity-50 rounded-lg p-6">
+                <div className="text-blue-200 leading-relaxed whitespace-pre-line">
+                  {changelog.upgrade}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Related changes section (Stripe-style) */}
+          {changelog.related && changelog.related.trim() && (
+            <section>
+              <h2 className="text-2xl font-semibold text-white mb-6">Related changes</h2>
+              <div className="text-gray-300 leading-relaxed">
+                {changelog.related}
               </div>
             </section>
           )}

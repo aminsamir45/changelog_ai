@@ -12,6 +12,13 @@ export interface ChangelogEntry {
   versionConfidence: number;
   generated: string;
   content: string;
+  // New Stripe-style fields
+  title?: string;
+  whatsNew?: string;
+  impact?: string;
+  upgrade?: string;
+  related?: string;
+  // Legacy and current format
   sections: {
     features?: string[];
     bugFixes?: string[];
@@ -67,10 +74,16 @@ export async function getAllChangelogs(): Promise<ChangelogEntry[]> {
         date: data.date || '',
         commits: data.commits || 0,
         repository: data.repository || '',
-        versionType: (data.versionType as any) || 'unknown',
+        versionType: (data.versionType as ChangelogEntry['versionType']) || 'unknown',
         versionConfidence: data.versionConfidence || 0,
         generated: data.generated || '',
         content,
+        // New Stripe-style fields
+        title: data.title || '',
+        whatsNew: data.whatsNew || '',
+        impact: data.impact || '',
+        upgrade: data.upgrade || '',
+        related: data.related || '',
         sections,
       };
     });
@@ -104,10 +117,16 @@ export async function getChangelogBySlug(slug: string): Promise<ChangelogEntry |
       date: data.date || '',
       commits: data.commits || 0,
       repository: data.repository || '',
-      versionType: (data.versionType as any) || 'unknown',
+      versionType: (data.versionType as ChangelogEntry['versionType']) || 'unknown',
       versionConfidence: data.versionConfidence || 0,
       generated: data.generated || '',
       content,
+      // New Stripe-style fields
+      title: data.title || '',
+      whatsNew: data.whatsNew || '',
+      impact: data.impact || '',
+      upgrade: data.upgrade || '',
+      related: data.related || '',
       sections,
     };
   } catch (error) {
@@ -119,7 +138,7 @@ export async function getChangelogBySlug(slug: string): Promise<ChangelogEntry |
 function parseChangelogContent(content: string) {
   const sections: ChangelogEntry['sections'] = {};
   
-  // Parse markdown sections
+  // Parse markdown sections - handle both legacy and new Stripe-style formats
   const lines = content.split('\n');
   let currentSection: string | null = null;
   let currentItems: string[] = [];
@@ -127,27 +146,53 @@ function parseChangelogContent(content: string) {
   for (const line of lines) {
     const trimmed = line.trim();
     
+    // Legacy format patterns (## with emojis)
     if (trimmed.startsWith('## ✨ Features')) {
       if (currentSection && currentItems.length > 0) {
-        (sections as any)[currentSection] = [...currentItems];
+        sections[currentSection as keyof typeof sections] = [...currentItems];
       }
       currentSection = 'features';
       currentItems = [];
     } else if (trimmed.startsWith('## 🐛 Bug Fixes')) {
       if (currentSection && currentItems.length > 0) {
-        (sections as any)[currentSection] = [...currentItems];
+        sections[currentSection as keyof typeof sections] = [...currentItems];
       }
       currentSection = 'bugFixes';
       currentItems = [];
     } else if (trimmed.startsWith('## 🚀 Improvements')) {
       if (currentSection && currentItems.length > 0) {
-        (sections as any)[currentSection] = [...currentItems];
+        sections[currentSection as keyof typeof sections] = [...currentItems];
       }
       currentSection = 'improvements';
       currentItems = [];
     } else if (trimmed.startsWith('## ⚠️ Breaking Changes')) {
       if (currentSection && currentItems.length > 0) {
-        (sections as any)[currentSection] = [...currentItems];
+        sections[currentSection as keyof typeof sections] = [...currentItems];
+      }
+      currentSection = 'breakingChanges';
+      currentItems = [];
+    // New Stripe-style format patterns (### under ## Changes)
+    } else if (trimmed.startsWith('### ✨ Features')) {
+      if (currentSection && currentItems.length > 0) {
+        sections[currentSection as keyof typeof sections] = [...currentItems];
+      }
+      currentSection = 'features';
+      currentItems = [];
+    } else if (trimmed.startsWith('### 🐛 Bug Fixes')) {
+      if (currentSection && currentItems.length > 0) {
+        sections[currentSection as keyof typeof sections] = [...currentItems];
+      }
+      currentSection = 'bugFixes';
+      currentItems = [];
+    } else if (trimmed.startsWith('### 🚀 Improvements')) {
+      if (currentSection && currentItems.length > 0) {
+        sections[currentSection as keyof typeof sections] = [...currentItems];
+      }
+      currentSection = 'improvements';
+      currentItems = [];
+    } else if (trimmed.startsWith('### ⚠️ Breaking Changes')) {
+      if (currentSection && currentItems.length > 0) {
+        sections[currentSection as keyof typeof sections] = [...currentItems];
       }
       currentSection = 'breakingChanges';
       currentItems = [];
@@ -156,7 +201,7 @@ function parseChangelogContent(content: string) {
     } else if (trimmed.startsWith('---') && currentSection) {
       // End of changelog sections
       if (currentItems.length > 0) {
-        (sections as any)[currentSection] = [...currentItems];
+        sections[currentSection as keyof typeof sections] = [...currentItems];
       }
       break;
     }
@@ -164,7 +209,7 @@ function parseChangelogContent(content: string) {
 
   // Don't forget the last section
   if (currentSection && currentItems.length > 0) {
-    (sections as any)[currentSection] = [...currentItems];
+    sections[currentSection as keyof typeof sections] = [...currentItems];
   }
 
   return sections;
