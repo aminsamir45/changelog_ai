@@ -1,6 +1,72 @@
 {
   "changelogs": [
     {
+      "filename": "2025-06-20-2025-06-20T01-34-07.md",
+      "date": "2025-06-20",
+      "commitCount": 1,
+      "commitHashes": [
+        "4116824c501161a4a498ba116c2a79c9d9cbd4dc"
+      ],
+      "versionType": "patch",
+      "versionConfidence": 60,
+      "options": {
+        "commits": "1"
+      },
+      "generated": "2025-06-20T01:34:07.030Z"
+    },
+    {
+      "filename": "2025-06-20-2025-06-20T01-33-48.md",
+      "date": "2025-06-20",
+      "commitCount": 1,
+      "commitHashes": [
+        "b4c71bdb08d5e75751e3bf02dd9d9362e5e11a52"
+      ],
+      "versionType": "minor",
+      "versionConfidence": 80,
+      "options": {
+        "commits": "1"
+      },
+      "generated": "2025-06-20T01:33:48.464Z"
+    },
+    {
+      "filename": "2025-06-20-2025-06-20T01-33-36.md",
+      "date": "2025-06-20",
+      "commitCount": 1,
+      "commitHashes": [
+        "698f20b89475d52ce5c77db7e68332112805094c"
+      ],
+      "versionType": "major",
+      "versionConfidence": 95,
+      "options": {
+        "commits": "1"
+      },
+      "generated": "2025-06-20T01:33:36.612Z"
+    },
+    {
+      "filename": "2025-06-20-2025-06-20T01-22-21.md",
+      "date": "2025-06-20",
+      "commitCount": 1,
+      "commitHashes": [
+        "b9cdf03fd7e46fe8341e9b99d8ad04bae37a05f0"
+      ],
+      "options": {
+        "commits": "1"
+      },
+      "generated": "2025-06-20T01:22:21.398Z"
+    },
+    {
+      "filename": "2025-06-20.md",
+      "date": "2025-06-20",
+      "commitCount": 1,
+      "commitHashes": [
+        "63613f3d0fcbc141e9c3fc2fddee95e21a46501d"
+      ],
+      "options": {
+        "commits": "1"
+      },
+      "generated": "2025-06-20T01:20:41.590Z"
+    },
+    {
       "filename": "2025-06-20.md",
       "date": "2025-06-20",
       "commitCount": 2,
@@ -35,5 +101,5 @@
       "generated": "2025-06-20T01:09:35.814Z"
     }
   ],
-  "lastGenerated": "2025-06-20T01:13:20.745Z"
+  "lastGenerated": "2025-06-20T01:34:07.030Z"
 }

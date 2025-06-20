@@ -41,9 +41,16 @@ async function viewHistory(options) {
       const date = new Date(changelog.generated);
       const relativeTime = getRelativeTime(date);
       
+      // Version type display
+      const versionType = changelog.versionType || 'unknown';
+      const versionEmoji = getVersionEmoji(versionType);
+      const versionColor = getVersionColor(versionType);
+      const confidence = changelog.versionConfidence || 0;
+      
       console.log(`${chalk.green('●')} ${chalk.bold(changelog.filename)}`);
       console.log(`  ${chalk.gray('Date:')} ${changelog.date}`);
       console.log(`  ${chalk.gray('Commits:')} ${changelog.commitCount}`);
+      console.log(`  ${chalk[versionColor]('Version:')} ${versionEmoji} ${versionType.toUpperCase()} (${confidence}%)`);
       console.log(`  ${chalk.gray('Generated:')} ${relativeTime}`);
       
       if (changelog.options) {
@@ -93,6 +100,24 @@ function getRelativeTime(date) {
   if (diffDays < 30) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
   
   return date.toLocaleDateString();
+}
+
+function getVersionEmoji(versionType) {
+  switch (versionType) {
+    case 'major': return '🚨';
+    case 'minor': return '✨';
+    case 'patch': return '🔧';
+    default: return '📦';
+  }
+}
+
+function getVersionColor(versionType) {
+  switch (versionType) {
+    case 'major': return 'red';
+    case 'minor': return 'blue';
+    case 'patch': return 'green';
+    default: return 'gray';
+  }
 }
 
 module.exports = { viewHistory }; 

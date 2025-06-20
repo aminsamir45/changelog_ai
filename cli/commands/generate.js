@@ -6,6 +6,7 @@ require('dotenv').config();
 
 const { GitService } = require('../services/git');
 const { AnthropicService } = require('../services/anthropic');
+const { VersionAnalyzer } = require('../services/version-analyzer');
 
 async function generateChangelog(options) {
   const spinner = ora('Generating changelog...').start();
@@ -66,22 +67,51 @@ async function generateChangelog(options) {
     // Get repository info
     const repositoryInfo = await gitService.getRepositoryInfo();
     
+    // Analyze version type
+    spinner.text = 'Analyzing version impact...';
+    const versionAnalyzer = new VersionAnalyzer();
+    const commitAnalysis = versionAnalyzer.analyzeCommits(newCommits);
+    
     // Generate changelog with AI
     spinner.start('Generating changelog with AI...');
     const anthropicService = new AnthropicService();
     const changelogSections = await anthropicService.summarizeCommits(newCommits, repositoryInfo);
     
+    // Analyze changelog sections for version type (cross-validate)
+    const sectionAnalysis = versionAnalyzer.analyzeChangelogSections(changelogSections);
+    
+    // Use the higher confidence analysis
+    const versionAnalysis = sectionAnalysis.confidence > commitAnalysis.confidence ? 
+      sectionAnalysis : commitAnalysis;
+    
     // Create changelog file
     spinner.text = 'Creating changelog file...';
-    const filename = await createChangelogFile(changelogSections, newCommits, repositoryInfo, options.output);
+    const filename = await createChangelogFile(changelogSections, newCommits, repositoryInfo, options.output, versionAnalysis);
     
     // Update metadata
-    await updateMetadata(filename, newCommits.length, options, newCommits);
+    await updateMetadata(filename, newCommits.length, options, newCommits, versionAnalysis);
     
     spinner.succeed('Changelog generated successfully!');
     
     // Display results
     console.log(chalk.green(`\n✅ Changelog created: ${filename}`));
+    
+    // Display version analysis
+    const emoji = versionAnalyzer.getVersionTypeEmoji(versionAnalysis.versionType);
+    const color = versionAnalyzer.getVersionTypeColor(versionAnalysis.versionType);
+    console.log(chalk[color](`${emoji} Suggested version bump: ${versionAnalysis.versionType.toUpperCase()} (${Math.round(versionAnalysis.confidence * 100)}% confidence)`));
+    
+    if (versionAnalysis.reasoning && versionAnalysis.reasoning.length > 0) {
+      console.log(chalk.gray('Reasoning:'));
+      versionAnalysis.reasoning.forEach(reason => {
+        if (typeof reason === 'string') {
+          console.log(chalk.gray(`  • ${reason}`));
+        } else {
+          console.log(chalk.gray(`  • ${reason.commit}: ${reason.reason}`));
+        }
+      });
+    }
+    
     console.log(chalk.blue('\nPreview:'));
     await displayChangelog(changelogSections);
     
@@ -125,9 +155,10 @@ async function validateEnvironment(gitService) {
   }
 }
 
-async function createChangelogFile(sections, commits, repositoryInfo, outputDir) {
+async function createChangelogFile(sections, commits, repositoryInfo, outputDir, versionAnalysis) {
   const date = new Date().toISOString().split('T')[0];
-  const filename = `${date}.md`;
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5); // Remove milliseconds and replace colons
+  const filename = `${date}-${timestamp}.md`;
   const filepath = path.join(outputDir, filename);
   
   // Create frontmatter
@@ -135,6 +166,8 @@ async function createChangelogFile(sections, commits, repositoryInfo, outputDir)
 date: ${date}
 commits: ${commits.length}
 repository: ${repositoryInfo.name}
+versionType: ${versionAnalysis.versionType}
+versionConfidence: ${Math.round(versionAnalysis.confidence * 100)}
 generated: ${new Date().toISOString()}
 ---
 
@@ -224,7 +257,7 @@ async function filterDuplicateCommits(commits) {
   }
 }
 
-async function updateMetadata(filename, commitCount, options, commits) {
+async function updateMetadata(filename, commitCount, options, commits, versionAnalysis) {
   const metadataPath = 'changelogs/metadata.json';
   
   try {
@@ -235,6 +268,8 @@ async function updateMetadata(filename, commitCount, options, commits) {
       date: new Date().toISOString().split('T')[0],
       commitCount,
       commitHashes: commits.map(c => c.hash), // Store commit hashes for duplicate detection
+      versionType: versionAnalysis.versionType,
+      versionConfidence: Math.round(versionAnalysis.confidence * 100),
       options: {
         commits: options.commits,
         since: options.since

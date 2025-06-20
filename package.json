@@ -8,8 +8,10 @@
   },
   "scripts": {
     "cli": "node cli/index.js",
+    "demo": "node demo.js",
     "dev:web": "cd web && npm run dev",
     "build:web": "cd web && npm run build",
+    "start:web": "cd web && npm run start",
     "install:all": "npm install && cd web && npm install"
   },
   "keywords": ["changelog", "git", "ai", "anthropic", "cli"],
